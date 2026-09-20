@@ -24,3 +24,26 @@ Portable Windows:
     ComfyUI_windows_portable\ComfyUI\user\default\workflows\
 
 Then left sidebar → Workflows → refresh.
+01 through 09 appear. Open, Queue.
+
+WHAT EACH FILE IS
+-----------------
+  01-txt2img.json           text → PNG
+  02-img2img.json           photo → restyle
+  03-inpaint.json           mask a hole
+  04-upscale.json           2× ESRGAN
+  05-controlnet.json        Canny lock
+  06-txt2vid.json           text → mp4   (WAN)
+  07-img2vid.json           still → mp4  (local Veo-style)
+  08-vid2vid.json           clip restyle
+  09-img2stl.json           photo → printable STL
+                            (generate + postprocess + fill holes + remesh)
+  09b-img2mesh-native.json  same idea, core Hunyuan, writes GLB not STL
+
+Skip the api/ folder unless you are posting to /prompt from a script.
+
+Red node = a model file is missing on disk. Click the loader
+and pick the checkpoint you already have.
+
+Outputs land in ComfyUI/output/
+  09 STL at  ComfyUI/output/3D/

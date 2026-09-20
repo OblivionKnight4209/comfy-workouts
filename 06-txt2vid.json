@@ -1,7 +1,7 @@
 {
-  "id": "flow-rack-img2img",
+  "id": "flow-rack-txt2vid",
   "revision": 0,
-  "last_node_id": 9,
+  "last_node_id": 12,
   "last_link_id": 11,
   "nodes": [
     {
@@ -9,11 +9,11 @@
       "type": "Note",
       "pos": [
         40,
-        40
+        20
       ],
       "size": [
-        420,
-        200
+        520,
+        260
       ],
       "flags": {},
       "order": 0,
@@ -26,21 +26,21 @@
       },
       "title": "How to run this",
       "widgets_values": [
-        "02  IMAGE TO IMAGE  —  offline\n\nLoad a source PNG. Denoise is the whole game:\n  0.35 = grade    0.55 = restyle    0.80 = new picture\nIf the subject melts, drop denoise. If nothing changes, raise it."
+        "06  TEXT TO VIDEO  (WAN 2.1)  —  offline\n\nThis is the official ComfyUI T2V layout, not an API.\nAlready on disk:\n  models/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors\n  models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors\n  models/vae/wan_2.1_vae.safetensors\n\nLength 33 ≈ 2s at 16 fps. Raise toward 81 (~5s) if VRAM allows.\nLeave the Chinese negative — it is the WAN default that kills frozen frames.\nPrompt the SHOT (dolly, pan, hold), not a still."
       ],
       "color": "#1c1c20",
       "bgcolor": "#131316"
     },
     {
       "id": 2,
-      "type": "CheckpointLoaderSimple",
+      "type": "UNETLoader",
       "pos": [
         40,
-        300
+        340
       ],
       "size": [
-        320,
-        100
+        380,
+        80
       ],
       "flags": {},
       "order": 1,
@@ -51,48 +51,31 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            5
+            1
           ],
           "slot_index": 0
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            3,
-            4
-          ],
-          "slot_index": 1
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            2,
-            10
-          ],
-          "slot_index": 2
         }
       ],
       "properties": {
-        "Node name for S&R": "CheckpointLoaderSimple",
+        "Node name for S&R": "UNETLoader",
         "cnr_id": "comfy-core"
       },
-      "title": "1  Load Checkpoint",
+      "title": "1  Load Diffusion Model",
       "widgets_values": [
-        "sd_xl_base_1.0.safetensors"
+        "wan2.1_t2v_1.3B_fp16.safetensors",
+        "default"
       ]
     },
     {
       "id": 3,
-      "type": "LoadImage",
+      "type": "CLIPLoader",
       "pos": [
         40,
         460
       ],
       "size": [
-        320,
-        280
+        380,
+        100
       ],
       "flags": {},
       "order": 2,
@@ -100,85 +83,153 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "IMAGE",
-          "type": "IMAGE",
+          "name": "CLIP",
+          "type": "CLIP",
           "links": [
-            1
+            2,
+            3
           ],
           "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": [],
-          "slot_index": 1
         }
       ],
       "properties": {
-        "Node name for S&R": "LoadImage",
+        "Node name for S&R": "CLIPLoader",
         "cnr_id": "comfy-core"
       },
-      "title": "2  Load Image",
+      "title": "2  Load CLIP (WAN / UMT5)",
       "widgets_values": [
-        "source.png",
-        "image"
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+        "wan",
+        "default"
       ]
     },
     {
       "id": 4,
-      "type": "VAEEncode",
+      "type": "VAELoader",
       "pos": [
-        420,
-        500
+        40,
+        600
       ],
       "size": [
-        220,
-        50
+        380,
+        60
       ],
       "flags": {},
       "order": 3,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "pixels",
-          "type": "IMAGE",
-          "link": 1
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "link": 2
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "name": "LATENT",
-          "type": "LATENT",
+          "name": "VAE",
+          "type": "VAE",
           "links": [
-            8
+            9
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "VAEEncode",
+        "Node name for S&R": "VAELoader",
         "cnr_id": "comfy-core"
       },
-      "title": "3  VAE Encode"
+      "title": "3  Load VAE",
+      "widgets_values": [
+        "wan_2.1_vae.safetensors"
+      ]
     },
     {
       "id": 5,
+      "type": "ModelSamplingSD3",
+      "pos": [
+        480,
+        340
+      ],
+      "size": [
+        240,
+        60
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModelSamplingSD3",
+        "cnr_id": "comfy-core"
+      },
+      "title": "4  WAN Shift  (8)",
+      "widgets_values": [
+        8
+      ]
+    },
+    {
+      "id": 6,
       "type": "CLIPTextEncode",
       "pos": [
-        420,
-        200
+        480,
+        460
       ],
       "size": [
         400,
         150
       ],
       "flags": {},
-      "order": 4,
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode",
+        "cnr_id": "comfy-core"
+      },
+      "title": "5  Positive  (the shot)",
+      "widgets_values": [
+        "slow dolly toward a vintage workbench at dusk, dust in warm light, cinematic, 24mm"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        480,
+        650
+      ],
+      "size": [
+        400,
+        140
+      ],
+      "flags": {},
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -201,36 +252,30 @@
         "Node name for S&R": "CLIPTextEncode",
         "cnr_id": "comfy-core"
       },
-      "title": "4  Positive Prompt",
+      "title": "6  Negative  (leave this)",
       "widgets_values": [
-        "same scene restyled as a dusk machine shop, warm practical lights, photoreal, 35mm"
+        "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走"
       ]
     },
     {
-      "id": 6,
-      "type": "CLIPTextEncode",
+      "id": 8,
+      "type": "EmptyHunyuanLatentVideo",
       "pos": [
-        420,
-        380
+        940,
+        560
       ],
       "size": [
-        400,
-        90
+        280,
+        130
       ],
       "flags": {},
-      "order": 5,
+      "order": 7,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 4
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
+          "name": "LATENT",
+          "type": "LATENT",
           "links": [
             7
           ],
@@ -238,48 +283,51 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "CLIPTextEncode",
+        "Node name for S&R": "EmptyHunyuanLatentVideo",
         "cnr_id": "comfy-core"
       },
-      "title": "5  Negative Prompt",
+      "title": "7  Empty Video Latent",
       "widgets_values": [
-        "blurry, watermark, text, deformed"
+        832,
+        480,
+        33,
+        1
       ]
     },
     {
-      "id": 7,
+      "id": 9,
       "type": "KSampler",
       "pos": [
-        880,
-        280
+        1280,
+        360
       ],
       "size": [
         300,
         270
       ],
       "flags": {},
-      "order": 6,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 5
+          "link": 4
         },
         {
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 6
+          "link": 5
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 7
+          "link": 6
         },
         {
           "name": "latent_image",
           "type": "LATENT",
-          "link": 8
+          "link": 7
         }
       ],
       "outputs": [
@@ -287,7 +335,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            9
+            8
           ],
           "slot_index": 0
         }
@@ -296,41 +344,41 @@
         "Node name for S&R": "KSampler",
         "cnr_id": "comfy-core"
       },
-      "title": "6  KSampler  denoise 0.55",
+      "title": "8  KSampler",
       "widgets_values": [
         123456789,
         "randomize",
-        24,
-        5,
-        "dpmpp_2m",
-        "karras",
-        0.55
+        30,
+        6,
+        "uni_pc",
+        "simple",
+        1
       ]
     },
     {
-      "id": 8,
+      "id": 10,
       "type": "VAEDecode",
       "pos": [
-        1240,
-        320
+        1640,
+        380
       ],
       "size": [
         210,
         50
       ],
       "flags": {},
-      "order": 7,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 9
+          "link": 8
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 10
+          "link": 9
         }
       ],
       "outputs": [
@@ -338,7 +386,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            11
+            10
           ],
           "slot_index": 0
         }
@@ -347,139 +395,181 @@
         "Node name for S&R": "VAEDecode",
         "cnr_id": "comfy-core"
       },
-      "title": "7  VAE Decode"
+      "title": "9  VAE Decode"
     },
     {
-      "id": 9,
-      "type": "SaveImage",
+      "id": 11,
+      "type": "CreateVideo",
       "pos": [
-        1500,
-        300
+        1640,
+        480
       ],
       "size": [
-        260,
+        240,
         60
       ],
       "flags": {},
-      "order": 8,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo",
+        "cnr_id": "comfy-core"
+      },
+      "title": "10  Create Video  16 fps",
+      "widgets_values": [
+        16
+      ]
+    },
+    {
+      "id": 12,
+      "type": "SaveVideo",
+      "pos": [
+        1940,
+        460
+      ],
+      "size": [
+        260,
+        90
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
           "link": 11
         }
       ],
       "outputs": [],
       "properties": {
-        "Node name for S&R": "SaveImage",
+        "Node name for S&R": "SaveVideo",
         "cnr_id": "comfy-core"
       },
-      "title": "8  Save Image",
+      "title": "11  Save Video",
       "widgets_values": [
-        "workout_02_img2img"
+        "video/workout_06_txt2vid",
+        "auto",
+        "auto"
       ]
     }
   ],
   "links": [
     [
       1,
-      3,
+      2,
       0,
-      4,
-      0,
-      "IMAGE"
-    ],
-    [
-      2,
-      2,
-      2,
-      4,
-      1,
-      "VAE"
-    ],
-    [
-      3,
-      2,
-      1,
       5,
-      0,
-      "CLIP"
-    ],
-    [
-      4,
-      2,
-      1,
-      6,
-      0,
-      "CLIP"
-    ],
-    [
-      5,
-      2,
-      0,
-      7,
       0,
       "MODEL"
     ],
     [
+      2,
+      3,
+      0,
       6,
-      5,
+      0,
+      "CLIP"
+    ],
+    [
+      3,
+      3,
       0,
       7,
+      0,
+      "CLIP"
+    ],
+    [
+      4,
+      5,
+      0,
+      9,
+      0,
+      "MODEL"
+    ],
+    [
+      5,
+      6,
+      0,
+      9,
       1,
       "CONDITIONING"
     ],
     [
-      7,
       6,
-      0,
       7,
+      0,
+      9,
       2,
       "CONDITIONING"
     ],
     [
-      8,
-      4,
-      0,
       7,
+      8,
+      0,
+      9,
       3,
       "LATENT"
     ],
     [
-      9,
-      7,
-      0,
       8,
+      9,
+      0,
+      10,
       0,
       "LATENT"
     ],
     [
+      9,
+      4,
+      0,
       10,
-      2,
-      2,
-      8,
       1,
       "VAE"
     ],
     [
-      11,
-      8,
+      10,
+      10,
       0,
-      9,
+      11,
       0,
       "IMAGE"
+    ],
+    [
+      11,
+      11,
+      0,
+      12,
+      0,
+      "VIDEO"
     ]
   ],
   "groups": [
     {
       "id": 1,
-      "title": "Load",
+      "title": "Load WAN",
       "bounding": [
         20,
-        260,
-        360,
-        520
+        310,
+        420,
+        390
       ],
       "color": "#3f789e",
       "font_size": 24,
@@ -487,12 +577,12 @@
     },
     {
       "id": 2,
-      "title": "Encode + prompt",
+      "title": "Shift + prompt",
       "bounding": [
-        400,
-        180,
+        460,
+        310,
         440,
-        420
+        500
       ],
       "color": "#3f7a5a",
       "font_size": 24,
@@ -500,12 +590,12 @@
     },
     {
       "id": 3,
-      "title": "Sample → save",
+      "title": "Sample → mp4",
       "bounding": [
-        860,
-        240,
-        940,
-        340
+        1260,
+        320,
+        980,
+        280
       ],
       "color": "#7a5a3f",
       "font_size": 24,
@@ -524,7 +614,7 @@
     "frontendVersion": "1.21.6",
     "flowRack": {
       "offline": true,
-      "slug": "img2img"
+      "slug": "txt2vid"
     }
   },
   "version": 0.4

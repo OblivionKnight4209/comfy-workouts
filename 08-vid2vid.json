@@ -1,18 +1,18 @@
 {
-  "id": "flow-rack-img2img",
+  "id": "flow-rack-vid2vid",
   "revision": 0,
-  "last_node_id": 9,
-  "last_link_id": 11,
+  "last_node_id": 11,
+  "last_link_id": 13,
   "nodes": [
     {
       "id": 1,
       "type": "Note",
       "pos": [
         40,
-        40
+        20
       ],
       "size": [
-        420,
+        500,
         200
       ],
       "flags": {},
@@ -26,7 +26,7 @@
       },
       "title": "How to run this",
       "widgets_values": [
-        "02  IMAGE TO IMAGE  —  offline\n\nLoad a source PNG. Denoise is the whole game:\n  0.35 = grade    0.55 = restyle    0.80 = new picture\nIf the subject melts, drop denoise. If nothing changes, raise it."
+        "08  VIDEO RESTYLE  —  offline\n\nimg2img denoise, on frames. Keep the motion, change the grade.\nDrop a 2–5s clip in Load Video (ComfyUI/input).\nDenoise 0.35–0.55. Flicker? Lower it. Inventing a new plot kills the motion.\nLoadVideo + GetVideoComponents are core on current ComfyUI."
       ],
       "color": "#1c1c20",
       "bgcolor": "#131316"
@@ -36,7 +36,7 @@
       "type": "CheckpointLoaderSimple",
       "pos": [
         40,
-        300
+        280
       ],
       "size": [
         320,
@@ -51,7 +51,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            5
+            6
           ],
           "slot_index": 0
         },
@@ -59,8 +59,8 @@
           "name": "CLIP",
           "type": "CLIP",
           "links": [
-            3,
-            4
+            4,
+            5
           ],
           "slot_index": 1
         },
@@ -68,8 +68,8 @@
           "name": "VAE",
           "type": "VAE",
           "links": [
-            2,
-            10
+            3,
+            11
           ],
           "slot_index": 2
         }
@@ -85,14 +85,14 @@
     },
     {
       "id": 3,
-      "type": "LoadImage",
+      "type": "LoadVideo",
       "pos": [
         40,
-        460
+        440
       ],
       "size": [
         320,
-        280
+        80
       ],
       "flags": {},
       "order": 2,
@@ -100,54 +100,96 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "IMAGE",
-          "type": "IMAGE",
+          "name": "VIDEO",
+          "type": "VIDEO",
           "links": [
             1
           ],
           "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": [],
-          "slot_index": 1
         }
       ],
       "properties": {
-        "Node name for S&R": "LoadImage",
+        "Node name for S&R": "LoadVideo",
         "cnr_id": "comfy-core"
       },
-      "title": "2  Load Image",
+      "title": "2  Load Video",
       "widgets_values": [
-        "source.png",
-        "image"
+        "source.mp4"
       ]
     },
     {
       "id": 4,
-      "type": "VAEEncode",
+      "type": "GetVideoComponents",
       "pos": [
         420,
-        500
+        440
       ],
       "size": [
-        220,
-        50
+        240,
+        70
       ],
       "flags": {},
       "order": 3,
       "mode": 0,
       "inputs": [
         {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [],
+          "slot_index": 1
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [],
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetVideoComponents",
+        "cnr_id": "comfy-core"
+      },
+      "title": "3  Split frames"
+    },
+    {
+      "id": 5,
+      "type": "VAEEncode",
+      "pos": [
+        720,
+        460
+      ],
+      "size": [
+        240,
+        50
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
           "name": "pixels",
           "type": "IMAGE",
-          "link": 1
+          "link": 2
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 2
+          "link": 3
         }
       ],
       "outputs": [
@@ -155,7 +197,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            8
+            9
           ],
           "slot_index": 0
         }
@@ -164,10 +206,10 @@
         "Node name for S&R": "VAEEncode",
         "cnr_id": "comfy-core"
       },
-      "title": "3  VAE Encode"
+      "title": "4  VAE Encode frames"
     },
     {
-      "id": 5,
+      "id": 6,
       "type": "CLIPTextEncode",
       "pos": [
         420,
@@ -175,47 +217,7 @@
       ],
       "size": [
         400,
-        150
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 3
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            6
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode",
-        "cnr_id": "comfy-core"
-      },
-      "title": "4  Positive Prompt",
-      "widgets_values": [
-        "same scene restyled as a dusk machine shop, warm practical lights, photoreal, 35mm"
-      ]
-    },
-    {
-      "id": 6,
-      "type": "CLIPTextEncode",
-      "pos": [
-        420,
-        380
-      ],
-      "size": [
-        400,
-        90
+        140
       ],
       "flags": {},
       "order": 5,
@@ -241,16 +243,56 @@
         "Node name for S&R": "CLIPTextEncode",
         "cnr_id": "comfy-core"
       },
-      "title": "5  Negative Prompt",
+      "title": "5  Positive  (the LOOK)",
       "widgets_values": [
-        "blurry, watermark, text, deformed"
+        "same action restyled as a rainy night workshop, teal practicals, film grain, photoreal"
       ]
     },
     {
       "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        420,
+        360
+      ],
+      "size": [
+        400,
+        80
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode",
+        "cnr_id": "comfy-core"
+      },
+      "title": "6  Negative Prompt",
+      "widgets_values": [
+        "morphing, flicker, watermark, text, extra limbs"
+      ]
+    },
+    {
+      "id": 8,
       "type": "KSampler",
       "pos": [
-        880,
+        1020,
         280
       ],
       "size": [
@@ -258,28 +300,28 @@
         270
       ],
       "flags": {},
-      "order": 6,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 5
+          "link": 6
         },
         {
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 6
+          "link": 7
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 7
+          "link": 8
         },
         {
           "name": "latent_image",
           "type": "LATENT",
-          "link": 8
+          "link": 9
         }
       ],
       "outputs": [
@@ -287,7 +329,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            9
+            10
           ],
           "slot_index": 0
         }
@@ -296,22 +338,22 @@
         "Node name for S&R": "KSampler",
         "cnr_id": "comfy-core"
       },
-      "title": "6  KSampler  denoise 0.55",
+      "title": "7  KSampler  denoise 0.45",
       "widgets_values": [
         123456789,
         "randomize",
-        24,
+        18,
         5,
         "dpmpp_2m",
         "karras",
-        0.55
+        0.45
       ]
     },
     {
-      "id": 8,
+      "id": 9,
       "type": "VAEDecode",
       "pos": [
-        1240,
+        1380,
         320
       ],
       "size": [
@@ -319,18 +361,18 @@
         50
       ],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 9
+          "link": 10
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 10
+          "link": 11
         }
       ],
       "outputs": [
@@ -338,7 +380,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            11
+            12
           ],
           "slot_index": 0
         }
@@ -347,37 +389,79 @@
         "Node name for S&R": "VAEDecode",
         "cnr_id": "comfy-core"
       },
-      "title": "7  VAE Decode"
+      "title": "8  VAE Decode"
     },
     {
-      "id": 9,
-      "type": "SaveImage",
+      "id": 10,
+      "type": "CreateVideo",
       "pos": [
-        1500,
-        300
+        1640,
+        320
       ],
       "size": [
-        260,
-        60
+        240,
+        80
       ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 11
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            13
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo",
+        "cnr_id": "comfy-core"
+      },
+      "title": "9  Create Video  16 fps",
+      "widgets_values": [
+        16
+      ]
+    },
+    {
+      "id": 11,
+      "type": "SaveVideo",
+      "pos": [
+        1940,
+        300
+      ],
+      "size": [
+        260,
+        90
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 13
         }
       ],
       "outputs": [],
       "properties": {
-        "Node name for S&R": "SaveImage",
+        "Node name for S&R": "SaveVideo",
         "cnr_id": "comfy-core"
       },
-      "title": "8  Save Image",
+      "title": "10  Save Video",
       "widgets_values": [
-        "workout_02_img2img"
+        "video/workout_08_vid2vid",
+        "auto",
+        "auto"
       ]
     }
   ],
@@ -388,23 +472,23 @@
       0,
       4,
       0,
-      "IMAGE"
+      "VIDEO"
     ],
     [
       2,
-      2,
-      2,
       4,
-      1,
-      "VAE"
+      0,
+      5,
+      0,
+      "IMAGE"
     ],
     [
       3,
       2,
-      1,
+      2,
       5,
-      0,
-      "CLIP"
+      1,
+      "VAE"
     ],
     [
       4,
@@ -417,58 +501,74 @@
     [
       5,
       2,
-      0,
+      1,
       7,
+      0,
+      "CLIP"
+    ],
+    [
+      6,
+      2,
+      0,
+      8,
       0,
       "MODEL"
     ],
     [
-      6,
-      5,
-      0,
       7,
+      6,
+      0,
+      8,
       1,
       "CONDITIONING"
     ],
     [
+      8,
       7,
-      6,
       0,
-      7,
+      8,
       2,
       "CONDITIONING"
     ],
     [
-      8,
-      4,
+      9,
+      5,
       0,
-      7,
+      8,
       3,
       "LATENT"
     ],
     [
-      9,
-      7,
-      0,
+      10,
       8,
+      0,
+      9,
       0,
       "LATENT"
     ],
     [
-      10,
+      11,
       2,
       2,
-      8,
+      9,
       1,
       "VAE"
     ],
     [
-      11,
-      8,
-      0,
+      12,
       9,
       0,
+      10,
+      0,
       "IMAGE"
+    ],
+    [
+      13,
+      10,
+      0,
+      11,
+      0,
+      "VIDEO"
     ]
   ],
   "groups": [
@@ -477,9 +577,9 @@
       "title": "Load",
       "bounding": [
         20,
-        260,
+        250,
         360,
-        520
+        310
       ],
       "color": "#3f789e",
       "font_size": 24,
@@ -487,12 +587,12 @@
     },
     {
       "id": 2,
-      "title": "Encode + prompt",
+      "title": "Frames + look",
       "bounding": [
         400,
-        180,
-        440,
-        420
+        170,
+        600,
+        380
       ],
       "color": "#3f7a5a",
       "font_size": 24,
@@ -500,12 +600,12 @@
     },
     {
       "id": 3,
-      "title": "Sample → save",
+      "title": "Restyle → mp4",
       "bounding": [
-        860,
-        240,
-        940,
-        340
+        1000,
+        250,
+        1240,
+        280
       ],
       "color": "#7a5a3f",
       "font_size": 24,
@@ -524,7 +624,7 @@
     "frontendVersion": "1.21.6",
     "flowRack": {
       "offline": true,
-      "slug": "img2img"
+      "slug": "vid2vid"
     }
   },
   "version": 0.4

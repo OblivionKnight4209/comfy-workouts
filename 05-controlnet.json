@@ -1,15 +1,15 @@
 {
-  "id": "flow-rack-img2img",
+  "id": "flow-rack-controlnet",
   "revision": 0,
-  "last_node_id": 9,
-  "last_link_id": 11,
+  "last_node_id": 12,
+  "last_link_id": 14,
   "nodes": [
     {
       "id": 1,
       "type": "Note",
       "pos": [
         40,
-        40
+        20
       ],
       "size": [
         420,
@@ -26,7 +26,7 @@
       },
       "title": "How to run this",
       "widgets_values": [
-        "02  IMAGE TO IMAGE  —  offline\n\nLoad a source PNG. Denoise is the whole game:\n  0.35 = grade    0.55 = restyle    0.80 = new picture\nIf the subject melts, drop denoise. If nothing changes, raise it."
+        "05  CANNY CONTROLNET  (SDXL)  —  offline\n\nPhoto → Canny lines → sampler redraws inside those lines.\nNeeds a Canny SDXL ControlNet already in models/controlnet.\nStrength 0.7–1.0. Drop it if the result is glued to the photo."
       ],
       "color": "#1c1c20",
       "bgcolor": "#131316"
@@ -36,7 +36,7 @@
       "type": "CheckpointLoaderSimple",
       "pos": [
         40,
-        300
+        280
       ],
       "size": [
         320,
@@ -51,7 +51,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            5
+            8
           ],
           "slot_index": 0
         },
@@ -59,8 +59,8 @@
           "name": "CLIP",
           "type": "CLIP",
           "links": [
-            3,
-            4
+            2,
+            3
           ],
           "slot_index": 1
         },
@@ -68,8 +68,7 @@
           "name": "VAE",
           "type": "VAE",
           "links": [
-            2,
-            10
+            13
           ],
           "slot_index": 2
         }
@@ -88,11 +87,11 @@
       "type": "LoadImage",
       "pos": [
         40,
-        460
+        440
       ],
       "size": [
         320,
-        280
+        260
       ],
       "flags": {},
       "order": 2,
@@ -118,67 +117,140 @@
         "Node name for S&R": "LoadImage",
         "cnr_id": "comfy-core"
       },
-      "title": "2  Load Image",
+      "title": "2  Load Pose Photo",
       "widgets_values": [
-        "source.png",
+        "pose.png",
         "image"
       ]
     },
     {
       "id": 4,
-      "type": "VAEEncode",
+      "type": "Canny",
       "pos": [
         420,
         500
       ],
       "size": [
-        220,
-        50
+        240,
+        80
       ],
       "flags": {},
       "order": 3,
       "mode": 0,
       "inputs": [
         {
-          "name": "pixels",
+          "name": "image",
           "type": "IMAGE",
           "link": 1
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "link": 2
         }
       ],
       "outputs": [
         {
-          "name": "LATENT",
-          "type": "LATENT",
+          "name": "IMAGE",
+          "type": "IMAGE",
           "links": [
-            8
+            7
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "VAEEncode",
+        "Node name for S&R": "Canny",
         "cnr_id": "comfy-core"
       },
-      "title": "3  VAE Encode"
+      "title": "3  Canny Edges",
+      "widgets_values": [
+        0.4,
+        0.8
+      ]
     },
     {
       "id": 5,
+      "type": "ControlNetLoader",
+      "pos": [
+        420,
+        640
+      ],
+      "size": [
+        320,
+        60
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CONTROL_NET",
+          "type": "CONTROL_NET",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ControlNetLoader",
+        "cnr_id": "comfy-core"
+      },
+      "title": "4  Load ControlNet",
+      "widgets_values": [
+        "controlnet-canny-sdxl-1.0.safetensors"
+      ]
+    },
+    {
+      "id": 6,
       "type": "CLIPTextEncode",
       "pos": [
         420,
         200
       ],
       "size": [
-        400,
-        150
+        380,
+        140
       ],
       "flags": {},
-      "order": 4,
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode",
+        "cnr_id": "comfy-core"
+      },
+      "title": "5  Positive Prompt",
+      "widgets_values": [
+        "full body character in a sunlit garage, denim jacket, cinematic lighting, photoreal"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        420,
+        370
+      ],
+      "size": [
+        380,
+        80
+      ],
+      "flags": {},
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -192,7 +264,7 @@
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "links": [
-            6
+            5
           ],
           "slot_index": 0
         }
@@ -201,56 +273,117 @@
         "Node name for S&R": "CLIPTextEncode",
         "cnr_id": "comfy-core"
       },
-      "title": "4  Positive Prompt",
+      "title": "6  Negative Prompt",
       "widgets_values": [
-        "same scene restyled as a dusk machine shop, warm practical lights, photoreal, 35mm"
+        "blurry, extra limbs, watermark, text"
       ]
     },
     {
-      "id": 6,
-      "type": "CLIPTextEncode",
+      "id": 8,
+      "type": "ControlNetApplyAdvanced",
       "pos": [
-        420,
-        380
+        800,
+        300
       ],
       "size": [
-        400,
-        90
+        300,
+        170
       ],
       "flags": {},
-      "order": 5,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
-          "name": "clip",
-          "type": "CLIP",
+          "name": "positive",
+          "type": "CONDITIONING",
           "link": 4
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 5
+        },
+        {
+          "name": "control_net",
+          "type": "CONTROL_NET",
+          "link": 6
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 7
         }
       ],
       "outputs": [
         {
-          "name": "CONDITIONING",
+          "name": "positive",
           "type": "CONDITIONING",
           "links": [
-            7
+            9
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            10
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ControlNetApplyAdvanced",
+        "cnr_id": "comfy-core"
+      },
+      "title": "7  Apply ControlNet",
+      "widgets_values": [
+        0.85,
+        0,
+        1
+      ]
+    },
+    {
+      "id": 9,
+      "type": "EmptyLatentImage",
+      "pos": [
+        800,
+        540
+      ],
+      "size": [
+        260,
+        110
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            11
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "CLIPTextEncode",
+        "Node name for S&R": "EmptyLatentImage",
         "cnr_id": "comfy-core"
       },
-      "title": "5  Negative Prompt",
+      "title": "8  Empty Latent",
       "widgets_values": [
-        "blurry, watermark, text, deformed"
+        1024,
+        1024,
+        1
       ]
     },
     {
-      "id": 7,
+      "id": 10,
       "type": "KSampler",
       "pos": [
-        880,
+        1160,
         280
       ],
       "size": [
@@ -258,28 +391,28 @@
         270
       ],
       "flags": {},
-      "order": 6,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 5
+          "link": 8
         },
         {
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 6
+          "link": 9
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 7
+          "link": 10
         },
         {
           "name": "latent_image",
           "type": "LATENT",
-          "link": 8
+          "link": 11
         }
       ],
       "outputs": [
@@ -287,7 +420,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            9
+            12
           ],
           "slot_index": 0
         }
@@ -296,22 +429,22 @@
         "Node name for S&R": "KSampler",
         "cnr_id": "comfy-core"
       },
-      "title": "6  KSampler  denoise 0.55",
+      "title": "9  KSampler",
       "widgets_values": [
         123456789,
         "randomize",
-        24,
+        28,
         5,
         "dpmpp_2m",
         "karras",
-        0.55
+        1
       ]
     },
     {
-      "id": 8,
+      "id": 11,
       "type": "VAEDecode",
       "pos": [
-        1240,
+        1520,
         320
       ],
       "size": [
@@ -319,18 +452,18 @@
         50
       ],
       "flags": {},
-      "order": 7,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 9
+          "link": 12
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 10
+          "link": 13
         }
       ],
       "outputs": [
@@ -338,7 +471,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            11
+            14
           ],
           "slot_index": 0
         }
@@ -347,13 +480,13 @@
         "Node name for S&R": "VAEDecode",
         "cnr_id": "comfy-core"
       },
-      "title": "7  VAE Decode"
+      "title": "10  VAE Decode"
     },
     {
-      "id": 9,
+      "id": 12,
       "type": "SaveImage",
       "pos": [
-        1500,
+        1780,
         300
       ],
       "size": [
@@ -361,13 +494,13 @@
         60
       ],
       "flags": {},
-      "order": 8,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 11
+          "link": 14
         }
       ],
       "outputs": [],
@@ -375,9 +508,9 @@
         "Node name for S&R": "SaveImage",
         "cnr_id": "comfy-core"
       },
-      "title": "8  Save Image",
+      "title": "11  Save Image",
       "widgets_values": [
-        "workout_02_img2img"
+        "workout_05_canny"
       ]
     }
   ],
@@ -393,80 +526,104 @@
     [
       2,
       2,
-      2,
-      4,
-      1,
-      "VAE"
-    ],
-    [
-      3,
-      2,
-      1,
-      5,
-      0,
-      "CLIP"
-    ],
-    [
-      4,
-      2,
       1,
       6,
       0,
       "CLIP"
     ],
     [
+      3,
+      2,
+      1,
+      7,
+      0,
+      "CLIP"
+    ],
+    [
+      4,
+      6,
+      0,
+      8,
+      0,
+      "CONDITIONING"
+    ],
+    [
       5,
+      7,
+      0,
+      8,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      6,
+      5,
+      0,
+      8,
+      2,
+      "CONTROL_NET"
+    ],
+    [
+      7,
+      4,
+      0,
+      8,
+      3,
+      "IMAGE"
+    ],
+    [
+      8,
       2,
       0,
-      7,
+      10,
       0,
       "MODEL"
     ],
     [
-      6,
-      5,
+      9,
+      8,
       0,
-      7,
+      10,
       1,
       "CONDITIONING"
     ],
     [
-      7,
-      6,
-      0,
-      7,
+      10,
+      8,
+      1,
+      10,
       2,
       "CONDITIONING"
     ],
     [
-      8,
-      4,
+      11,
+      9,
       0,
-      7,
+      10,
       3,
       "LATENT"
     ],
     [
-      9,
-      7,
+      12,
+      10,
       0,
-      8,
+      11,
       0,
       "LATENT"
     ],
     [
-      10,
+      13,
       2,
       2,
-      8,
+      11,
       1,
       "VAE"
     ],
     [
+      14,
       11,
-      8,
       0,
-      9,
+      12,
       0,
       "IMAGE"
     ]
@@ -477,9 +634,9 @@
       "title": "Load",
       "bounding": [
         20,
-        260,
+        250,
         360,
-        520
+        490
       ],
       "color": "#3f789e",
       "font_size": 24,
@@ -487,12 +644,12 @@
     },
     {
       "id": 2,
-      "title": "Encode + prompt",
+      "title": "Edges + prompt",
       "bounding": [
         400,
-        180,
+        170,
         440,
-        420
+        570
       ],
       "color": "#3f7a5a",
       "font_size": 24,
@@ -500,12 +657,12 @@
     },
     {
       "id": 3,
-      "title": "Sample → save",
+      "title": "Steer + sample",
       "bounding": [
-        860,
-        240,
-        940,
-        340
+        780,
+        260,
+        1300,
+        430
       ],
       "color": "#7a5a3f",
       "font_size": 24,
@@ -524,7 +681,7 @@
     "frontendVersion": "1.21.6",
     "flowRack": {
       "offline": true,
-      "slug": "img2img"
+      "slug": "controlnet"
     }
   },
   "version": 0.4

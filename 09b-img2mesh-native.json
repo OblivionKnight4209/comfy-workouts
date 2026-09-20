@@ -1,0 +1,252 @@
+{
+  "id": "flow-rack-img2mesh-native",
+  "revision": 0,
+  "last_node_id": 12,
+  "last_link_id": 13,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [40, 20],
+      "size": [540, 260],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {"Node name for S&R": "Note", "cnr_id": "comfy-core"},
+      "title": "How to run this",
+      "widgets_values": [
+        "09b  IMAGE TO MESH  (native Hunyuan3D, no extra nodes)  —  offline\n\nCore ComfyUI. No wrapper. Writes GLB, not STL.\nAlready on disk:\n  models/checkpoints/hunyuan3d-dit-v2_fp16.safetensors\n\nFill Holes is the print step — it closes the gaps that used to wreck infill.\nFor the printer: Blender → Import glTF (.glb) → Export STL (binary).\nOr use 09-img2stl.json if you installed Hunyuan3DWrapper — that one writes .stl directly."
+      ],
+      "color": "#1c1c20",
+      "bgcolor": "#131316"
+    },
+    {
+      "id": 2,
+      "type": "ImageOnlyCheckpointLoader",
+      "pos": [40, 340],
+      "size": [380, 100],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [1], "slot_index": 0},
+        {"name": "CLIP_VISION", "type": "CLIP_VISION", "links": [2], "slot_index": 1},
+        {"name": "VAE", "type": "VAE", "links": [10], "slot_index": 2}
+      ],
+      "properties": {"Node name for S&R": "ImageOnlyCheckpointLoader", "cnr_id": "comfy-core"},
+      "title": "1  Load Hunyuan3D Checkpoint",
+      "widgets_values": ["hunyuan3d-dit-v2_fp16.safetensors"]
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": [40, 500],
+      "size": [320, 280],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "IMAGE", "type": "IMAGE", "links": [3], "slot_index": 0},
+        {"name": "MASK", "type": "MASK", "links": [], "slot_index": 1}
+      ],
+      "properties": {"Node name for S&R": "LoadImage", "cnr_id": "comfy-core"},
+      "title": "2  Load Photo",
+      "widgets_values": ["source.png", "image"]
+    },
+    {
+      "id": 4,
+      "type": "ModelSamplingAuraFlow",
+      "pos": [480, 340],
+      "size": [240, 60],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 1}
+      ],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [4], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "ModelSamplingAuraFlow", "cnr_id": "comfy-core"},
+      "title": "3  AuraFlow Shift  (1.0)",
+      "widgets_values": [1]
+    },
+    {
+      "id": 5,
+      "type": "CLIPVisionEncode",
+      "pos": [480, 460],
+      "size": [260, 80],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {"name": "clip_vision", "type": "CLIP_VISION", "link": 2},
+        {"name": "image", "type": "IMAGE", "link": 3}
+      ],
+      "outputs": [
+        {"name": "CLIP_VISION_OUTPUT", "type": "CLIP_VISION_OUTPUT", "links": [5], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "CLIPVisionEncode", "cnr_id": "comfy-core"},
+      "title": "4  Encode the still",
+      "widgets_values": ["none"]
+    },
+    {
+      "id": 6,
+      "type": "Hunyuan3Dv2Conditioning",
+      "pos": [480, 600],
+      "size": [280, 50],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {"name": "clip_vision_output", "type": "CLIP_VISION_OUTPUT", "link": 5}
+      ],
+      "outputs": [
+        {"name": "positive", "type": "CONDITIONING", "links": [6], "slot_index": 0},
+        {"name": "negative", "type": "CONDITIONING", "links": [7], "slot_index": 1}
+      ],
+      "properties": {"Node name for S&R": "Hunyuan3Dv2Conditioning", "cnr_id": "comfy-core"},
+      "title": "5  3D Conditioning",
+      "widgets_values": []
+    },
+    {
+      "id": 7,
+      "type": "EmptyLatentHunyuan3Dv2",
+      "pos": [480, 710],
+      "size": [260, 80],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "LATENT", "type": "LATENT", "links": [8], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "EmptyLatentHunyuan3Dv2", "cnr_id": "comfy-core"},
+      "title": "6  Empty 3D Latent",
+      "widgets_values": [3072, 1]
+    },
+    {
+      "id": 8,
+      "type": "KSampler",
+      "pos": [840, 360],
+      "size": [300, 270],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 4},
+        {"name": "positive", "type": "CONDITIONING", "link": 6},
+        {"name": "negative", "type": "CONDITIONING", "link": 7},
+        {"name": "latent_image", "type": "LATENT", "link": 8}
+      ],
+      "outputs": [
+        {"name": "LATENT", "type": "LATENT", "links": [9], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "KSampler", "cnr_id": "comfy-core"},
+      "title": "7  KSampler  cfg 5.5",
+      "widgets_values": [123456789, "randomize", 30, 5.5, "euler", "normal", 1]
+    },
+    {
+      "id": 9,
+      "type": "VAEDecodeHunyuan3D",
+      "pos": [1200, 360],
+      "size": [300, 100],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {"name": "samples", "type": "LATENT", "link": 9},
+        {"name": "vae", "type": "VAE", "link": 10}
+      ],
+      "outputs": [
+        {"name": "VOXEL", "type": "VOXEL", "links": [11], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "VAEDecodeHunyuan3D", "cnr_id": "comfy-core"},
+      "title": "8  Decode Voxels",
+      "widgets_values": [8000, 256]
+    },
+    {
+      "id": 10,
+      "type": "VoxelToMesh",
+      "pos": [1200, 520],
+      "size": [280, 80],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {"name": "voxel", "type": "VOXEL", "link": 11}
+      ],
+      "outputs": [
+        {"name": "MESH", "type": "MESH", "links": [12], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "VoxelToMesh", "cnr_id": "comfy-core"},
+      "title": "9  Voxel → Mesh",
+      "widgets_values": ["surface net", 0.6]
+    },
+    {
+      "id": 11,
+      "type": "FillHoles",
+      "pos": [1540, 500],
+      "size": [280, 130],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {"name": "mesh", "type": "MESH", "link": 12}
+      ],
+      "outputs": [
+        {"name": "MESH", "type": "MESH", "links": [13], "slot_index": 0}
+      ],
+      "properties": {"Node name for S&R": "FillHoles", "cnr_id": "comfy-core"},
+      "title": "10  Fill Holes  (print)",
+      "widgets_values": [0.15, 0.00001, 16, false]
+    },
+    {
+      "id": 12,
+      "type": "SaveGLB",
+      "pos": [1880, 460],
+      "size": [320, 80],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {"name": "mesh", "type": "MESH", "link": 13}
+      ],
+      "outputs": [],
+      "properties": {"Node name for S&R": "SaveGLB", "cnr_id": "comfy-core"},
+      "title": "11  Save GLB",
+      "widgets_values": ["mesh/workout_09b_print", ""]
+    }
+  ],
+  "links": [
+    [1, 2, 0, 4, 0, "MODEL"],
+    [2, 2, 1, 5, 0, "CLIP_VISION"],
+    [3, 3, 0, 5, 1, "IMAGE"],
+    [4, 4, 0, 8, 0, "MODEL"],
+    [5, 5, 0, 6, 0, "CLIP_VISION_OUTPUT"],
+    [6, 6, 0, 8, 1, "CONDITIONING"],
+    [7, 6, 1, 8, 2, "CONDITIONING"],
+    [8, 7, 0, 8, 3, "LATENT"],
+    [9, 8, 0, 9, 0, "LATENT"],
+    [10, 2, 2, 9, 1, "VAE"],
+    [11, 9, 0, 10, 0, "VOXEL"],
+    [12, 10, 0, 11, 0, "MESH"],
+    [13, 11, 0, 12, 0, "MESH"]
+  ],
+  "groups": [
+    {"id": 1, "title": "Load", "bounding": [20, 310, 400, 500], "color": "#3f789e", "font_size": 24, "flags": {}},
+    {"id": 2, "title": "Condition + sample", "bounding": [460, 310, 720, 520], "color": "#3f7a5a", "font_size": 24, "flags": {}},
+    {"id": 3, "title": "Mesh → print file", "bounding": [1180, 330, 1060, 280], "color": "#7a5a3f", "font_size": 24, "flags": {}}
+  ],
+  "config": {},
+  "extra": {
+    "ds": {"scale": 0.72, "offset": [20, 10]},
+    "frontendVersion": "1.21.6",
+    "flowRack": {"offline": true, "slug": "img2mesh-native"}
+  },
+  "version": 0.4
+}

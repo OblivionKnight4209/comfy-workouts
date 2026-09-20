@@ -1,1 +1,253 @@
-{"id":"flow-rack-upscale","revision":0,"last_node_id":5,"last_link_id":3,"nodes":[{"id":1,"type":"Note","pos":[40,40],"size":[420,160],"flags":{},"order":0,"mode":0,"inputs":[],"outputs":[],"properties":{"Node name for S&R":"Note","cnr_id":"comfy-core"},"title":"How to run this","widgets_values":["04  2x UPSCALE  \u2014  offline\n\nNo sampler. No prompt. Convolution.\nPoint Load Upscale Model at RealESRGAN_x2plus.pth (or any ESRGAN) already in models/upscale_models.\n1024 becomes 2048."],"color":"#1c1c20","bgcolor":"#131316"},{"id":2,"type":"LoadImage","pos":[40,260],"size":[320,280],"flags":{},"order":1,"mode":0,"inputs":[],"outputs":[{"name":"IMAGE","type":"IMAGE","links":[2],"slot_index":0},{"name":"MASK","type":"MASK","links":[],"slot_index":1}],"properties":{"Node name for S&R":"LoadImage","cnr_id":"comfy-core"},"title":"1  Load Image","widgets_values":["source.png","image"]},{"id":3,"type":"UpscaleModelLoader","pos":[40,580],"size":[320,60],"flags":{},"order":2,"mode":0,"inputs":[],"outputs":[{"name":"UPSCALE_MODEL","type":"UPSCALE_MODEL","links":[1],"slot_index":0}],"properties":{"Node name for S&R":"UpscaleModelLoader","cnr_id":"comfy-core"},"title":"2  Load Upscale Model","widgets_values":["RealESRGAN_x2plus.pth"]},{"id":4,"type":"ImageUpscaleWithModel","pos":[420,360],"size":[260,50],"flags":{},"order":3,"mode":0,"inputs":[{"name":"upscale_model","type":"UPSCALE_MODEL","link":1},{"name":"image","type":"IMAGE","link":2}],"outputs":[{"name":"IMAGE","type":"IMAGE","links":[3],"slot_index":0}],"properties":{"Node name for S&R":"ImageUpscaleWithModel","cnr_id":"comfy-core"},"title":"3  Upscale with Model"},{"id":5,"type":"SaveImage","pos":[760,340],"size":[260,60],"flags":{},"order":4,"mode":0,"inputs":[{"name":"images","type":"IMAGE","link":3}],"outputs":[],"properties":{"Node name for S&R":"SaveImage","cnr_id":"comfy-core"},"title":"4  Save Image","widgets_values":["workout_04_upscale"]}],"links":[[1,3,0,4,0,"UPSCALE_MODEL"],[2,2,0,4,1,"IMAGE"],[3,4,0,5,0,"IMAGE"]],"groups":[{"id":1,"title":"Load","bounding":[20,230,360,450],"color":"#3f789e","font_size":24,"flags":{}},{"id":2,"title":"Run → save","bounding":[400,300,660,160],"color":"#3f7a5a","font_size":24,"flags":{}}],"config":{},"extra":{"ds":{"scale":0.78,"offset":[20,10]},"frontendVersion":"1.21.6","flowRack":{"offline":true,"slug":"upscale"}},"version":0.4}
+{
+  "id": "flow-rack-upscale",
+  "revision": 0,
+  "last_node_id": 5,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        420,
+        160
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note",
+        "cnr_id": "comfy-core"
+      },
+      "title": "How to run this",
+      "widgets_values": [
+        "04  2× UPSCALE  —  offline\n\nNo sampler. No prompt. Convolution.\nPoint Load Upscale Model at RealESRGAN_x2plus.pth (or any ESRGAN) already in models/upscale_models.\n1024 becomes 2048."
+      ],
+      "color": "#1c1c20",
+      "bgcolor": "#131316"
+    },
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        320,
+        280
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage",
+        "cnr_id": "comfy-core"
+      },
+      "title": "1  Load Image",
+      "widgets_values": [
+        "source.png",
+        "image"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "UpscaleModelLoader",
+      "pos": [
+        40,
+        580
+      ],
+      "size": [
+        320,
+        60
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "UPSCALE_MODEL",
+          "type": "UPSCALE_MODEL",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UpscaleModelLoader",
+        "cnr_id": "comfy-core"
+      },
+      "title": "2  Load Upscale Model",
+      "widgets_values": [
+        "RealESRGAN_x2plus.pth"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "ImageUpscaleWithModel",
+      "pos": [
+        420,
+        360
+      ],
+      "size": [
+        260,
+        50
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "upscale_model",
+          "type": "UPSCALE_MODEL",
+          "link": 1
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageUpscaleWithModel",
+        "cnr_id": "comfy-core"
+      },
+      "title": "3  Upscale with Model"
+    },
+    {
+      "id": 5,
+      "type": "SaveImage",
+      "pos": [
+        760,
+        340
+      ],
+      "size": [
+        260,
+        60
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 3
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage",
+        "cnr_id": "comfy-core"
+      },
+      "title": "4  Save Image",
+      "widgets_values": [
+        "workout_04_upscale"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      3,
+      0,
+      4,
+      0,
+      "UPSCALE_MODEL"
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      3,
+      4,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Load",
+      "bounding": [
+        20,
+        230,
+        360,
+        450
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Run → save",
+      "bounding": [
+        400,
+        300,
+        660,
+        160
+      ],
+      "color": "#3f7a5a",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.78,
+      "offset": [
+        20,
+        10
+      ]
+    },
+    "frontendVersion": "1.21.6",
+    "flowRack": {
+      "offline": true,
+      "slug": "upscale"
+    }
+  },
+  "version": 0.4
+}

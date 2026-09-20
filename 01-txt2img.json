@@ -1,1 +1,467 @@
-{"id":"flow-rack-txt2img","revision":0,"last_node_id":8,"last_link_id":9,"nodes":[{"id":1,"type":"Note","pos":[40,40],"size":[420,200],"flags":{},"order":0,"mode":0,"inputs":[],"outputs":[],"properties":{"Node name for S&R":"Note","cnr_id":"comfy-core"},"title":"How to run this","widgets_values":["01  TEXT TO IMAGE  (SDXL)  \u2014  offline\n\nDrag this JSON onto the ComfyUI canvas.\nPoint Load Checkpoint at ANY SDXL / Pony / Illustrious already in models/checkpoints.\nEdit the two CLIP boxes. Queue Prompt.\n\nRed node = missing local file, not needs internet."],"color":"#1c1c20","bgcolor":"#131316"},{"id":2,"type":"CheckpointLoaderSimple","pos":[40,300],"size":[320,100],"flags":{},"order":1,"mode":0,"inputs":[],"outputs":[{"name":"MODEL","type":"MODEL","links":[3],"slot_index":0},{"name":"CLIP","type":"CLIP","links":[1,2],"slot_index":1},{"name":"VAE","type":"VAE","links":[8],"slot_index":2}],"properties":{"Node name for S&R":"CheckpointLoaderSimple","cnr_id":"comfy-core"},"title":"1  Load Checkpoint","widgets_values":["sd_xl_base_1.0.safetensors"]},{"id":3,"type":"CLIPTextEncode","pos":[420,220],"size":[400,160],"flags":{},"order":2,"mode":0,"inputs":[{"name":"clip","type":"CLIP","link":1}],"outputs":[{"name":"CONDITIONING","type":"CONDITIONING","links":[4],"slot_index":0}],"properties":{"Node name for S&R":"CLIPTextEncode","cnr_id":"comfy-core"},"title":"2  Positive Prompt","widgets_values":["cinematic still of a quiet machine shop at dusk, warm practical lights, 35mm, shallow depth of field, photoreal"]},{"id":4,"type":"CLIPTextEncode","pos":[420,420],"size":[400,140],"flags":{},"order":3,"mode":0,"inputs":[{"name":"clip","type":"CLIP","link":2}],"outputs":[{"name":"CONDITIONING","type":"CONDITIONING","links":[5],"slot_index":0}],"properties":{"Node name for S&R":"CLIPTextEncode","cnr_id":"comfy-core"},"title":"3  Negative Prompt","widgets_values":["blurry, watermark, text, extra fingers, deformed, lowres"]},{"id":5,"type":"EmptyLatentImage","pos":[420,600],"size":[280,110],"flags":{},"order":4,"mode":0,"inputs":[],"outputs":[{"name":"LATENT","type":"LATENT","links":[6],"slot_index":0}],"properties":{"Node name for S&R":"EmptyLatentImage","cnr_id":"comfy-core"},"title":"4  Empty Latent","widgets_values":[1024,1024,1]},{"id":6,"type":"KSampler","pos":[880,280],"size":[300,270],"flags":{},"order":5,"mode":0,"inputs":[{"name":"model","type":"MODEL","link":3},{"name":"positive","type":"CONDITIONING","link":4},{"name":"negative","type":"CONDITIONING","link":5},{"name":"latent_image","type":"LATENT","link":6}],"outputs":[{"name":"LATENT","type":"LATENT","links":[7],"slot_index":0}],"properties":{"Node name for S&R":"KSampler","cnr_id":"comfy-core"},"title":"5  KSampler","widgets_values":[123456789,"randomize",28,5,"dpmpp_2m","karras",1]},{"id":7,"type":"VAEDecode","pos":[1240,320],"size":[210,50],"flags":{},"order":6,"mode":0,"inputs":[{"name":"samples","type":"LATENT","link":7},{"name":"vae","type":"VAE","link":8}],"outputs":[{"name":"IMAGE","type":"IMAGE","links":[9],"slot_index":0}],"properties":{"Node name for S&R":"VAEDecode","cnr_id":"comfy-core"},"title":"6  VAE Decode"},{"id":8,"type":"SaveImage","pos":[1500,300],"size":[260,60],"flags":{},"order":7,"mode":0,"inputs":[{"name":"images","type":"IMAGE","link":9}],"outputs":[],"properties":{"Node name for S&R":"SaveImage","cnr_id":"comfy-core"},"title":"7  Save Image","widgets_values":["workout_01_txt2img"]}],"links":[[1,2,1,3,0,"CLIP"],[2,2,1,4,0,"CLIP"],[3,2,0,6,0,"MODEL"],[4,3,0,6,1,"CONDITIONING"],[5,4,0,6,2,"CONDITIONING"],[6,5,0,6,3,"LATENT"],[7,6,0,7,0,"LATENT"],[8,2,2,7,1,"VAE"],[9,7,0,8,0,"IMAGE"]],"groups":[{"id":1,"title":"Load","bounding":[20,260,360,180],"color":"#3f789e","font_size":24,"flags":{}},{"id":2,"title":"Prompt + canvas","bounding":[400,200,440,540],"color":"#3f7a5a","font_size":24,"flags":{}},{"id":3,"title":"Sample → save","bounding":[860,240,940,340],"color":"#7a5a3f","font_size":24,"flags":{}}],"config":{},"extra":{"ds":{"scale":0.78,"offset":[20,10]},"frontendVersion":"1.21.6","flowRack":{"offline":true,"slug":"txt2img"}},"version":0.4}
+{
+  "id": "flow-rack-txt2img",
+  "revision": 0,
+  "last_node_id": 8,
+  "last_link_id": 9,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        420,
+        200
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note",
+        "cnr_id": "comfy-core"
+      },
+      "title": "How to run this",
+      "widgets_values": [
+        "01  TEXT TO IMAGE  (SDXL)  —  offline\n\nDrag this JSON onto the ComfyUI canvas.\nPoint Load Checkpoint at ANY SDXL / Pony / Illustrious already in models/checkpoints.\nEdit the two CLIP boxes. Queue Prompt.\n\nRed node = missing local file, not “needs internet.”"
+      ],
+      "color": "#1c1c20",
+      "bgcolor": "#131316"
+    },
+    {
+      "id": 2,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            1,
+            2
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            8
+          ],
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CheckpointLoaderSimple",
+        "cnr_id": "comfy-core"
+      },
+      "title": "1  Load Checkpoint",
+      "widgets_values": [
+        "sd_xl_base_1.0.safetensors"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "pos": [
+        420,
+        220
+      ],
+      "size": [
+        400,
+        160
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode",
+        "cnr_id": "comfy-core"
+      },
+      "title": "2  Positive Prompt",
+      "widgets_values": [
+        "cinematic still of a quiet machine shop at dusk, warm practical lights, 35mm, shallow depth of field, photoreal"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+        420,
+        420
+      ],
+      "size": [
+        400,
+        140
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode",
+        "cnr_id": "comfy-core"
+      },
+      "title": "3  Negative Prompt",
+      "widgets_values": [
+        "blurry, watermark, text, extra fingers, deformed, lowres"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "EmptyLatentImage",
+      "pos": [
+        420,
+        600
+      ],
+      "size": [
+        280,
+        110
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage",
+        "cnr_id": "comfy-core"
+      },
+      "title": "4  Empty Latent",
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ]
+    },
+    {
+      "id": 6,
+      "type": "KSampler",
+      "pos": [
+        880,
+        280
+      ],
+      "size": [
+        300,
+        270
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 3
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 4
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 5
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            7
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSampler",
+        "cnr_id": "comfy-core"
+      },
+      "title": "5  KSampler",
+      "widgets_values": [
+        123456789,
+        "randomize",
+        28,
+        5,
+        "dpmpp_2m",
+        "karras",
+        1
+      ]
+    },
+    {
+      "id": 7,
+      "type": "VAEDecode",
+      "pos": [
+        1240,
+        320
+      ],
+      "size": [
+        210,
+        50
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            9
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode",
+        "cnr_id": "comfy-core"
+      },
+      "title": "6  VAE Decode"
+    },
+    {
+      "id": 8,
+      "type": "SaveImage",
+      "pos": [
+        1500,
+        300
+      ],
+      "size": [
+        260,
+        60
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage",
+        "cnr_id": "comfy-core"
+      },
+      "title": "7  Save Image",
+      "widgets_values": [
+        "workout_01_txt2img"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      1,
+      3,
+      0,
+      "CLIP"
+    ],
+    [
+      2,
+      2,
+      1,
+      4,
+      0,
+      "CLIP"
+    ],
+    [
+      3,
+      2,
+      0,
+      6,
+      0,
+      "MODEL"
+    ],
+    [
+      4,
+      3,
+      0,
+      6,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      5,
+      4,
+      0,
+      6,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      6,
+      5,
+      0,
+      6,
+      3,
+      "LATENT"
+    ],
+    [
+      7,
+      6,
+      0,
+      7,
+      0,
+      "LATENT"
+    ],
+    [
+      8,
+      2,
+      2,
+      7,
+      1,
+      "VAE"
+    ],
+    [
+      9,
+      7,
+      0,
+      8,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Load",
+      "bounding": [
+        20,
+        260,
+        360,
+        180
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Prompt + canvas",
+      "bounding": [
+        400,
+        200,
+        440,
+        540
+      ],
+      "color": "#3f7a5a",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "Sample → save",
+      "bounding": [
+        860,
+        240,
+        940,
+        340
+      ],
+      "color": "#7a5a3f",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.78,
+      "offset": [
+        20,
+        10
+      ]
+    },
+    "frontendVersion": "1.21.6",
+    "flowRack": {
+      "offline": true,
+      "slug": "txt2img"
+    }
+  },
+  "version": 0.4
+}

@@ -1,0 +1,26 @@
+WHERE TO PUT THESE AFTER UNZIP
+==============================
+
+These are ComfyUI graphs. Not custom nodes. Not models.
+Do NOT dump this folder into custom_nodes / models / input / output.
+
+EASIEST — no folder needed
+--------------------------
+1. Unzip anywhere (Desktop is fine).
+2. Open ComfyUI.
+3. Drag one numbered .json onto the canvas
+   (or File → Open).
+4. Pick your checkpoint on the red loader if it is red.
+5. Queue Prompt.
+
+TO MAKE THEM SHOW IN THE SIDEBAR
+--------------------------------
+Copy only the numbered *.json files into:
+
+    ComfyUI/user/default/workflows/
+
+Portable Windows:
+
+    ComfyUI_windows_portable\ComfyUI\user\default\workflows\
+
+Then left sidebar → Workflows → refresh.
